@@ -3,13 +3,12 @@
 #include "led.h"
 #include "imu.h"
 #include "defs.h"
+#include "macros.h"
 
 extern MOVEMENT_STATE movState;
 extern STILL_STATE stillState;
-extern bool executionPaused;
-extern bool shouldQuit;
-extern float pRotZ;
-extern float nRotZ;
+extern bool executionPaused, shouldQuit;
+extern float pRotZ, nRotZ;
 
 extern void pauseExecutionBtnCallback();
 extern void terminateExecutionBtnCallback();

@@ -4,6 +4,7 @@
 #include "led.h"
 #include "imu.h"
 #include "defs.h"
+#include "macros.h"
 
 MOVEMENT_STATE movState;
 STILL_STATE stillState;
@@ -19,6 +20,7 @@ extern float crx, cry, crz;
 
 static void updateMovementState(void)
 {
+
 }
 
 static void updateStillState(void)
@@ -111,5 +113,6 @@ void loop(void)
         exit(0);
     }
 
-    delay(10uL);
+    //delay(10uL);
+    delay(100uL);
 }
