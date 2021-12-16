@@ -8,7 +8,8 @@
 extern MOVEMENT_STATE movState;
 extern STILL_STATE stillState;
 extern bool executionPaused, shouldQuit;
-extern float pRotZ, nRotZ;
+extern float pRotZ;
+extern uint32_t nRotZ;
 
 extern void pauseExecutionBtnCallback();
 extern void terminateExecutionBtnCallback();
@@ -35,9 +36,9 @@ static void initPins()
 
 void setup(void)
 {
-    movState = MOV_STILL; stillState = STILL_SITTING;
+    movState = MOV_STILL; stillState = STILL_STANDING;
     executionPaused = false; shouldQuit = false;
-    pRotZ = 0.0f; nRotZ = 0.0f;
+    pRotZ = 1.0f; nRotZ = 0;
 
     initSerial(9600uL);
     initPins();

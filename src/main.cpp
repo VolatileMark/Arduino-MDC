@@ -10,7 +10,8 @@ MOVEMENT_STATE movState;
 STILL_STATE stillState;
 
 bool executionPaused, shouldQuit;
-float pRotZ, nRotZ;
+float pRotZ, py = 0;
+uint32_t nRotZ;
 
 static float x, y, z;
 static float rx, ry, rz;
@@ -25,14 +26,18 @@ static void updateMovementState(void)
 
 static void updateStillState(void)
 {
-    float approxX, approxY, approxZ;
-    float adjX, adjY, adjZ;
     float standing, sitting, laying;
-    int commonWeight;
+    float approxX, approxY, approxZ;
+    //float adjX, adjY, adjZ;
+    //float absy;
+    float commonWeight;
+    STILL_STATE newState;
 
     approxX = roundf(x); approxY = roundf(y); approxZ = roundf(z);
-    adjX = AVG(x, approxX); adjY = AVG(y, approxY); adjZ = AVG(z, approxZ);
+    //adjX = AVG(x, approxX); adjY = AVG(y, approxY); adjZ = AVG(z, approxZ);
+    //absy = abs(y);
 
+    /*
     if (rz < -ROT_REC_THS) { nRotZ -= rz; pRotZ = 0; }
     else if (rz > ROT_REC_THS) { pRotZ += rz; nRotZ = 0; }
 
@@ -41,8 +46,26 @@ static void updateStillState(void)
     standing = (2.0f - sqrtf(approxX * approxX + approxY * approxY + approxZ * approxZ)) + (sqrtf(adjX * adjX + adjY * adjY + adjZ * adjZ) < STANDING_THS) / 2.0f + STATE_WEIGHT(stillState, STILL_STANDING);
     sitting = commonWeight + GET_ROT_WEIGHT(pRotZ, PROT_THS, PROT_EXPECTED_VALUE_OFF) + STATE_WEIGHT(stillState, STILL_SITTING);
     laying = commonWeight + GET_ROT_WEIGHT(nRotZ, NROT_THS, NROT_EXPECTED_VALUE_OFF)  - ((standing > sitting) / 2.0f) + STATE_WEIGHT(stillState, STILL_LAYING);
+    */
 
-    //INFO("standing: %f, sitting: %f, laying: %f, nrot: %f, prot: %f", standing, sitting, laying, nRotZ, pRotZ);
+    if (abs(y) > Y_ACC_LO_THS)
+    {
+        if (y * pRotZ <= 0)
+        {
+            if (nRotZ > 0 && millis() - nRotZ > ACTION_MILLIS) { pRotZ = y; nRotZ = millis(); INFO("TRIGGERED"); }
+            else if (py * y <= 0) { nRotZ = millis(); }
+        }
+        else if (abs(pRotZ) < abs(y)) { pRotZ = y; }
+        py = y;
+    }
+    else if (y * py <= 0) { nRotZ = 0; }
+
+    commonWeight = (roundf(sqrtf(approxX * approxX + approxY * approxY + approxZ * approxZ)) == 0);
+    standing = commonWeight + (pRotZ > +Y_ACC_LO_THS || pRotZ < -Y_ACC_HI_THS) + STATE_WEIGHT(stillState, STILL_STANDING);
+    sitting = commonWeight + (pRotZ < -Y_ACC_LO_THS || pRotZ > +Y_ACC_HI_THS) + STATE_WEIGHT(stillState, STILL_SITTING);
+    laying = (abs(approxX) == 0.0f && abs(approxY) == 1.0f && abs(approxZ) == 1.0f) * 2.0f + STATE_WEIGHT(stillState, STILL_LAYING);
+
+    INFO("standing: %f, sitting: %f, laying: %f, millis: %d, highest: %f, current: %f, delta: %d", standing, sitting, laying, nRotZ, pRotZ, y, millis() - nRotZ);
     
     stillState = (standing > sitting && standing > laying) ? STILL_STANDING : (sitting >= laying) ? STILL_SITTING : STILL_LAYING;
 }
@@ -110,9 +133,11 @@ void loop(void)
         IMU.end();
         setLedColor(LED_COLOR_GREEN);
         INFO("Execution terminated");
+        Serial.flush();
+        Serial.end();
         exit(0);
     }
 
-    //delay(10uL);
-    delay(100uL);
+    delay(10uL);
+    //delay(100uL);
 }
