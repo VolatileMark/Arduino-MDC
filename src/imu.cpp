@@ -38,7 +38,7 @@ void calibrateIMU(void)
         cry = (cry + pry) / 2.0f;
         crz = (crz + prz) / 2.0f;
 
-        delay(10);
+        delay(10uL);
     }
 
     INFO("IMU software calibration complete");
