@@ -1,13 +1,15 @@
 #include "IMU.h"
 #include "Led.h"
 #include "Log.h"
+#include "MacroUtils.h"
+#include "Defs.h"
 
-float crx, cry, crz;
 float cx, cy, cz;
+float crx, cry, crz;
 
 void calibrateIMU(void)
 {
-    INFO("Starting IMU software calibration...");
+    info("Starting IMU software calibration...");
 
     uint8_t times;
     float px, py, pz;
@@ -41,22 +43,34 @@ void calibrateIMU(void)
         delay(10uL);
     }
 
-    INFO("IMU software calibration complete");
+    info("IMU software calibration complete");
 
-    INFO("Accelerometer calibration:");
-    LOG_AXIS(cx, cy, cz);
-    INFO("Gyroscope calibration:");
-    LOG_AXIS(crx, cry, crz);
+    info("Accelerometer calibration:");
+    logaxis(cx, cy, cz);
+    info("Gyroscope calibration:");
+    logaxis(crx, cry, crz);
 }
 
 void initIMU(void)
 {
     if (!IMU.begin())
     {
-        ERR("Could not initialize IMU");
+        err("Could not initialize IMU");
         setRgbLedColor(LED_COLOR_RED);
         exit(1);
     }
     IMU.setContinuousMode();
-    INFO("IMU initialized");
+    info("IMU initialized");
+}
+
+void pollIMU(float& ax, float& ay, float& az, float& rx, float& ry, float& rz)
+{
+    hang(!IMU.accelerationAvailable());
+    IMU.readAcceleration(ax, ay, az);
+    ax -= cx; ay -= cy; az -= cz;
+    ax *= G_IN_MS2; ay *= G_IN_MS2; az *= G_IN_MS2;
+    
+    hang(!IMU.gyroscopeAvailable());
+    IMU.readGyroscope(rx, ry, rz);
+    rx -= crx; ry -= cry; rz -= crz;
 }

@@ -8,7 +8,7 @@
     #define logmsg(lvl, msg, ...) ((void)0)
 #endif
 
-#define INFO(msg, ...) logmsg("INFO", msg, ##__VA_ARGS__)
-#define WARN(msg, ...) logmsg("WARN", msg, ##__VA_ARGS__)
-#define ERR(msg, ...) logmsg("ERRO", msg, ##__VA_ARGS__)
-#define LOG_AXIS(x, y, z) logmsg("AXIS", "%f / %f / %f", x, y, z);
+#define info(msg, ...) logmsg("INFO", msg, ##__VA_ARGS__)
+#define warn(msg, ...) logmsg("WARN", msg, ##__VA_ARGS__)
+#define err(msg, ...) logmsg("ERRO", msg, ##__VA_ARGS__)
+#define logaxis(x, y, z) logmsg("AXIS", "%f / %f / %f", x, y, z);

@@ -4,9 +4,9 @@ void initSerial(uint32_t speed)
 {
     Serial.begin(speed);
 #ifdef __DEBUG__
-    HANG(!Serial);
+    hang(!Serial);
 #endif
-    INFO("Serial initialized with speed %u", speed);
+    info("Serial initialized with speed %u", speed);
 }
 
 void initPins(void)
@@ -25,7 +25,7 @@ void setup(void)
     initLeds();
     initIMU();
 
-    INFO("Waiting for permission to calibrate");
-    HANG(digitalRead(BTN_CALIBRATE_PIN));
+    info("Waiting for permission to calibrate");
+    hang(digitalRead(BTN_CALIBRATE_PIN));
     calibrateIMU();
 }
