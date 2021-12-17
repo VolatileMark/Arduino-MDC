@@ -14,7 +14,12 @@ typedef enum
     LED_COLOR_WHITE = 0b111
 } LED_COLOR;
 
-#define turnLedOff() setLedColor(LED_COLOR_BLACK)
 
-void initLed(void);
-void setLedColor(LED_COLOR color);
+#define turnRgbLedOff() setRgbLedColor(LED_COLOR_BLACK)
+
+void initLeds(void);
+void setRgbLedColor(LED_COLOR color);
+void turnPowerLedOn(void);
+void turnBuiltinLedOn(void);
+void turnPowerLedOff(void);
+void turnBuiltinLedOff(void);

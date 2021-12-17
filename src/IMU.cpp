@@ -1,6 +1,6 @@
-#include "imu.h"
-#include "led.h"
-#include "log.h"
+#include "IMU.h"
+#include "Led.h"
+#include "Log.h"
 
 float crx, cry, crz;
 float cx, cy, cz;
@@ -54,7 +54,7 @@ void initIMU(void)
     if (!IMU.begin())
     {
         ERR("Could not initialize IMU");
-        setLedColor(LED_COLOR_RED);
+        setRgbLedColor(LED_COLOR_RED);
         exit(1);
     }
     IMU.setContinuousMode();
