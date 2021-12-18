@@ -24,8 +24,11 @@ void setup(void)
     initPins();
     initLeds();
     initIMU();
+    initRecorder();
+
 
     info("Waiting for permission to calibrate");
     hang(digitalRead(BTN_CALIBRATE_PIN));
+    delay(500uL);
     calibrateIMU();
 }
