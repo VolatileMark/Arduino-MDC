@@ -105,11 +105,13 @@ static void checkMovement(void)
 
 void runMDC(void)
 {
+    float approxAccX, approxAccY, approxAccZ;
     pollIMU(accx, accy, accz, rotx, roty, rotz);
 
-    checkMovement();
+    approxAccX = abs(roundf(accx / G_IN_MS2)); approxAccY = abs(roundf(accy / G_IN_MS2)); approxAccZ = abs(roundf(accz / G_IN_MS2));
 
-    if (abs(roundf(accx / G_IN_MS2)) == 0.0f && abs(roundf(accy  / G_IN_MS2)) == 1.0f && abs(roundf(accz / G_IN_MS2)) == 1.0f) { currentState = MDC_LAYING; }
+    if (approxAccX == 0.0f && approxAccY == 1.0f && approxAccZ == 1.0f) { currentState = MDC_LAYING; }
+    else { checkMovement(); }
 }
 
 MDC_STATE getCurrentMDCState(void)
