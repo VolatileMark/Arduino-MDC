@@ -8,15 +8,13 @@
 
 #define G_IN_MS2 9.8066
 
-#define SAMPLE_RATE 64.0
-#define MAX_SAMPLES 128
-#define MIN_SAMPLES 32
+#define SAMPLING_RATE 20.0
+#define SAMPLES 64
+#define TIME_WINDOW (SAMPLES / SAMPLE_RATE)
 #define ACC_REC_THS (0.17f * G_IN_MS2)
 #define GYR_REC_THS 17.0
 #define GRACE_TIMER_DELAY ((MIN_SAMPLES / SAMPLE_RATE) * 2.0)
 #define COOLDOWN_TIMER_DELAY 500uL
-
-typedef double SamplesBuffer[MAX_SAMPLES];
 
 typedef enum
 {
