@@ -6,6 +6,7 @@ void initSerial(uint32_t speed)
 #ifdef __DEBUG__
     hang(!Serial);
 #endif
+    delay(250);
     info("Serial initialized with speed %u", speed);
 }
 
@@ -25,7 +26,6 @@ void setup(void)
     initLeds();
     initIMU();
     initRecorder();
-
 
     info("Waiting for permission to calibrate");
     hang(digitalRead(BTN_CALIBRATE_PIN));

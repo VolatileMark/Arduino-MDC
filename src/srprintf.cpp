@@ -35,7 +35,7 @@ void srprintf(const char* s, ...)
             Serial.print(va_arg(ap, uint32_t));
             break;
         case 'f':
-            Serial.print(va_arg(ap, double));
+            Serial.print(va_arg(ap, double), 6);
             break;
         case '%':
             Serial.print('%');

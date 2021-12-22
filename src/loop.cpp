@@ -19,7 +19,7 @@ void loop(void)
         setRgbLedColor(LED_COLOR_GREEN);
         break;
     case MDC_LAYING_L:
-        setRgbLedColor(LED_COLOR_RED);
+        setRgbLedColor(LED_COLOR_WHITE);
         break;
     case MDC_LAYING_R:
         setRgbLedColor(LED_COLOR_YELLOW);
