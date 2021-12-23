@@ -1,9 +1,11 @@
 #include "DoubleBuffer.h"
+#include "srprintf.h"
 
 DoubleBuffer::DoubleBuffer(size_t size)
 {
-    this->buffer = (double*) malloc(size);
+    this->buffer = (double*) malloc(size * sizeof(double));
     this->size = size;
+    index = 0;
     memset(this->buffer, 0, this->size);
 }
 
@@ -37,6 +39,12 @@ double DoubleBuffer::pop(void)
     return value;
 }
 
+void DoubleBuffer::put(double value)
+{
+    buffer[index++] = value;
+    if (index == size) { index = 0; }
+}
+
 size_t DoubleBuffer::getSize(void)
 {
     return size;
@@ -45,4 +53,15 @@ size_t DoubleBuffer::getSize(void)
 double* DoubleBuffer::getBuffer(void)
 {
     return buffer;
+}
+
+void DoubleBuffer::print(void)
+{
+    for (size_t i = 0; i < size; i++) { srprintf("[BUFF] %d %f\n", i, buffer[i]); }
+}
+
+void DoubleBuffer::clear(void)
+{
+    memset(buffer, 0, sizeof(double) * size);
+    index = 0;
 }

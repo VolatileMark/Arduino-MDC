@@ -45,6 +45,8 @@ void calibrateIMU(void)
     logaxis(cx, cy, cz);
     info("Gyroscope calibration:");
     logaxis(crx, cry, crz);
+
+    delay(1000uL);
 }
 
 void initIMU(void)

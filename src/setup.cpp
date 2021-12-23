@@ -21,7 +21,7 @@ void initPins(void)
 
 void setup(void)
 {
-    initSerial(9600uL);
+    initSerial(115200uL);
     initPins();
     initLeds();
     initIMU();
