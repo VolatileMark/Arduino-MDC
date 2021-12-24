@@ -6,7 +6,7 @@ DoubleBuffer::DoubleBuffer(size_t size)
     this->buffer = (double*) malloc(size * sizeof(double));
     this->size = size;
     index = 0;
-    memset(this->buffer, 0, this->size);
+    memset(this->buffer, 0, this->size * sizeof(double));
 }
 
 DoubleBuffer::~DoubleBuffer()
@@ -62,6 +62,6 @@ void DoubleBuffer::print(void)
 
 void DoubleBuffer::clear(void)
 {
-    memset(buffer, 0, sizeof(double) * size);
+    memset(buffer, 0, size * sizeof(double));
     index = 0;
 }

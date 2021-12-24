@@ -15,6 +15,7 @@
 
 #define ACC_DET_THS (0.175 * G_IN_MS2)
 #define GRACE_TIME 1000
+#define MIN_VALID_THS 5.0
 
 typedef enum
 {
