@@ -2,6 +2,7 @@
 #include "IMU.h"
 #include "MacroUtils.h"
 #include "DoubleBuffer.h"
+#include "Defs.h"
 #include <arduinoFFT.h>
 
 static double ryReal[SAMPLES], ryImag[SAMPLES], yAvg[IMPULSE_SAMPLES];
@@ -11,7 +12,7 @@ static arduinoFFT FFT = arduinoFFT(ryReal, ryImag, (uint16_t) SAMPLES, SAMPLING_
 static MDC_STATE currentState;
 static double accx, accy, accz;
 static double rotx, roty, rotz;
-static char walking, standing, sitting, layingF, layingB, layingR, layingL;
+static bool walking, standing, sitting, layingF, layingB, layingR, layingL;
 static uint32_t sampleT20, sampleT200, graceT;
 
 static void averageArray(double* src, double* output, int arrSize, int perSideWindowSize)
@@ -45,27 +46,29 @@ static void checkIfWalking(void)
     maxPeak = FFT.MajorPeak();
     approxPeak = round(maxPeak * 10.0) / 10.0;
     peakIndex = (uint16_t) round((maxPeak * SAMPLES) / SAMPLING_RATE);
-    srprintf("Major peak: %fHz %d -- Peak value: %f\n", approxPeak, peakIndex, ryReal[peakIndex]);
-    walking = (approxPeak >= 0.55 && approxPeak <= 2.25 && ryReal[peakIndex] > 150.0) + (currentState == MDC_WALKING || currentState == MDC_STANDING);
+    walking = (approxPeak >= MIN_WALK_FRQ && approxPeak <= MAX_WALK_FRQ && ryReal[peakIndex] >= MIN_WALK_AMP && ryReal[peakIndex] <= MAX_WALK_AMP && (currentState == MDC_WALKING || currentState == MDC_STANDING));
+    //srprintf("Major peak: %fHz -- Peak index: %d -- Peak value: %f -- Walking: %d\n", approxPeak, peakIndex, ryReal[peakIndex], walking);
 }
 
 static void checkIfLaying(void)
 {
+    bool commonX, commonZ;
     double approxAccX, approxAccY, approxAccZ;
     approxAccX = round(accx / G_IN_MS2); approxAccY = round(accy / G_IN_MS2); approxAccZ = round(accz / G_IN_MS2);
-    //if (approxAccX == 0.0 && approxAccY == 1.0 && abs(approxAccZ) == 1.0) { currentState = (approxAccZ > 0.0) ? MDC_LAYING_B : MDC_LAYING_F; }
-    //else if (abs(approxAccX) == 1.0 && approxAccY == 1.0 && approxAccZ == 0.0) { currentState = (approxAccX > 0.0) ? MDC_LAYING_R : MDC_LAYING_L; }
-    layingF = (approxAccX == 0.0 && approxAccY == 1.0) + (approxAccZ == -1.0);
-    layingB = (approxAccX == 0.0 && approxAccY == 1.0) + (approxAccZ == +1.0);
-    layingL = (approxAccZ == 0.0 && approxAccY == 1.0) + (approxAccX == -1.0);
-    layingR = (approxAccZ == 0.0 && approxAccY == 1.0) + (approxAccX == +1.0);
+    commonX = (approxAccX == 0.0 && approxAccY == 1.0); commonZ = (approxAccZ == 0.0 && approxAccY == 1.0);
+    layingF = (commonX && approxAccZ == -1.0);
+    layingB = (commonX && approxAccZ == +1.0);
+    layingL = (commonZ && approxAccX == -1.0);
+    layingR = (commonZ && approxAccX == +1.0);
 }
 
 static void parseImpulse(void)
 {
     double yMin, yMax;
     uint16_t yMinIdx, yMaxIdx, i;
+
     averageArray(yDataBuffer.getBuffer(), yAvg, IMPULSE_SAMPLES, 4);
+    
     for 
     (
         i = 0, yMaxIdx = 0, yMinIdx = 0, yMin = yAvg[0], yMax = yAvg[0];
@@ -79,17 +82,22 @@ static void parseImpulse(void)
     yDataBuffer.clear();
 
     if (round(yMax - yMin) < MIN_VALID_THS) { return; }
-    //if (yMinIdx < yMaxIdx) { srprintf("Stood up: %f\n", yMax - yMin); }
-    //else if (yMaxIdx < yMinIdx) { srprintf("Stood down: %f\n", yMax - yMin); }
-    standing = (yMinIdx < yMaxIdx) + (currentState != MDC_STANDING && currentState != MDC_WALKING);
-    sitting = (yMaxIdx < yMinIdx) + (currentState != MDC_SITTING && currentState != MDC_WALKING) - (currentState == MDC_WALKING);
+    
+    standing = (yMinIdx < yMaxIdx && !walking);
+    sitting = (yMaxIdx < yMinIdx && currentState != MDC_WALKING);
 }
 
 static void checkIfStandingOrSitting(void)
 {
     uint32_t nowT;
+    double acc;
 
-    if (sqrt(sq(accx) + sq(accy) + sq(accz)) < ACC_DET_THS)
+    acc = sqrt(sq(accx) + sq(accy) + sq(accz));
+
+    if 
+    (
+        acc < ACC_DETECT_THS_LO || acc > ACC_DETECT_THS_HI /* Add high accelerometer ths and replace or with and */
+    )
     {
         if (graceT > 0 && millis() - graceT > GRACE_TIME) { parseImpulse(); graceT = 0; }
         return;
@@ -106,12 +114,16 @@ static void checkIfStandingOrSitting(void)
 
 static void setState()
 {
-    currentState = (walking > standing && walking > sitting && walking > layingF && walking > layingB && walking > layingR && walking > layingL) ? MDC_WALKING : \
-                   (standing > sitting && standing > layingF && standing > layingB && standing > layingR && standing > layingL) ? MDC_STANDING : \
-                   (sitting > layingF && sitting > layingB && sitting > layingR && sitting > layingL) ? MDC_SITTING : \
-                   (layingF > layingB && layingF > layingR && layingF > layingL) ? MDC_LAYING_F : \
-                   (layingB > layingR && layingB > layingF) ? MDC_LAYING_B : \
-                   (layingR > layingL) ? MDC_LAYING_R : MDC_LAYING_L;
+    if (graceT > 0) { return; }
+    //standing |= (!walking && currentState == walking);
+    standing |= !(layingB || layingF || layingL || layingR || sitting || walking) && (currentState == MDC_WALKING);
+    if (layingB) { currentState = MDC_LAYING_B; }
+    else if (layingF) { currentState = MDC_LAYING_F; }
+    else if (layingL) { currentState = MDC_LAYING_L; }
+    else if (layingR) { currentState = MDC_LAYING_R; }
+    else if (walking) { currentState = MDC_WALKING; }
+    else if (sitting) { currentState = MDC_SITTING; }
+    else if (standing) { currentState = MDC_STANDING; }
 }
 
 void initRecorder(void)
@@ -120,20 +132,21 @@ void initRecorder(void)
     rotx = 0.0; roty = 0.0; rotz = 0.0;
     currentState = MDC_SITTING;
     sampleT20 = 0; sampleT200 = 0; graceT = 0;
-    walking = 0.0; standing = 0.0; sitting = 1.0; layingF = 0.0; layingB = 0.0; layingR = 0.0; layingL = 0.0;
+    walking = false; standing = false; sitting = true;
+    layingF = false; layingB = false; layingR = false; layingL = false;
 }
 
 void runMDC(void)
 {
     pollIMU(accx, accy, accz, rotx, roty, rotz);
 
-    srprintf("%f %f %f\n", rotx, roty, rotz);
-    delay(50);
+    //srprintf("%f %f %f\n", rotx, roty, rotz);
+    //delay(50);
 
-    //checkIfLaying();
-    //checkIfWalking();
-    //checkIfStandingOrSitting();
-    //setState();
+    checkIfLaying();
+    checkIfWalking();
+    checkIfStandingOrSitting();
+    setState();
 
     //srprintf("Walking: %d / Standing: %d / Sitting: %d / LayingF: %d / LayingB: %d / LayingR: %d / LayingL: %d\n", walking, standing, sitting, layingF, layingB, layingR, layingL);
 }

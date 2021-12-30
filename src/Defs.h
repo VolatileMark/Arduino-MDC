@@ -13,9 +13,14 @@
 #define IMPULSE_SAMPLING_RATE 200
 #define IMPULSE_SAMPLES 200
 
-#define ACC_DET_THS (0.175 * G_IN_MS2)
+#define ACC_DETECT_THS_LO (0.175 * G_IN_MS2)
+#define ACC_DETECT_THS_HI (1.25 * G_IN_MS2)
 #define GRACE_TIME 1000
 #define MIN_VALID_THS 5.0
+#define MIN_WALK_FRQ 0.6
+#define MAX_WALK_FRQ 2.0
+#define MIN_WALK_AMP 175.0
+#define MAX_WALK_AMP 500.0
 
 typedef enum
 {
