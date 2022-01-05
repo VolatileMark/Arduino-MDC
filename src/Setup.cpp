@@ -1,4 +1,4 @@
-#include "main.h"
+#include "Common.h"
 
 void initSerial(uint32_t speed)
 {
