@@ -11,7 +11,6 @@ void initLeds(void)
     turnRgbLedOff();
     turnPowerLedOff();
     turnBuiltinLedOff();
-    info("Internal led initialized");
 }
 
 void setRgbLedColor(LED_COLOR color)

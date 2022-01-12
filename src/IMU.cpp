@@ -9,6 +9,8 @@ double crx, cry, crz;
 
 void calibrateIMU(void)
 {
+    setRgbLedColor(LED_COLOR_YELLOW);
+    
     info("Starting IMU software calibration...");
 
     uint8_t times;
@@ -47,6 +49,8 @@ void calibrateIMU(void)
     logaxis(crx, cry, crz);
 
     delay(1000uL);
+    
+    setRgbLedColor(LED_COLOR_GREEN);
 }
 
 void initIMU(void)

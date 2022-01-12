@@ -7,6 +7,9 @@ void srprintf(const char* s, ...)
     char* p;
     va_list ap;
 
+    if (!Serial)
+        return;
+
     va_start(ap, s);
 
     for (p = *((char**) &s); *p != '\0'; p++)

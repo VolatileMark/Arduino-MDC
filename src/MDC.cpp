@@ -79,6 +79,7 @@ static void parseImpulse(void)
         if (yAvg[i] > yMax) { yMax = yAvg[i]; yMaxIdx = i; }
         if (yAvg[i] < yMin) { yMin = yAvg[i]; yMinIdx = i; }
     }
+
     yDataBuffer.clear();
 
     if (round(yMax - yMin) < MIN_VALID_THS) { return; }
@@ -139,9 +140,6 @@ void initRecorder(void)
 void runMDC(void)
 {
     pollIMU(accx, accy, accz, rotx, roty, rotz);
-
-    //srprintf("%f %f %f\n", rotx, roty, rotz);
-    //delay(50);
 
     checkIfLaying();
     checkIfWalking();
