@@ -5,26 +5,26 @@
 #include "Defs.h"
 #include <arduinoFFT.h>
 
-static double ryReal[SAMPLES], ryImag[SAMPLES], yAvg[IMPULSE_SAMPLES];
-static DoubleBuffer ryDataBuffer = DoubleBuffer(SAMPLES);
+static double rzReal[SAMPLES], rzImag[SAMPLES], yAvg[IMPULSE_SAMPLES];
+static DoubleBuffer rzDataBuffer = DoubleBuffer(SAMPLES);
 static DoubleBuffer yDataBuffer = DoubleBuffer(IMPULSE_SAMPLES);
-static arduinoFFT FFT = arduinoFFT(ryReal, ryImag, (uint16_t) SAMPLES, SAMPLING_RATE);
+static arduinoFFT FFT = arduinoFFT(rzReal, rzImag, (uint16_t) SAMPLES, SAMPLING_RATE);
 static MDC_STATE currentState;
 static double accx, accy, accz;
 static double rotx, roty, rotz;
 static bool walking, standing, sitting, layingF, layingB, layingR, layingL;
 static uint32_t sampleT20, sampleT200, graceT;
 
-static void averageArray(double* src, double* output, int arrSize, int perSideWindowSize)
+static void averageArray(double* src, double* dest, int n, int perSideWindowSize)
 {
     int start, end;
     double sum;
-    for (int i = 0; i < arrSize; i++)
+    for (int i = 0; i < n; i++)
     {
         sum = 0.0;
-        start = max(i - perSideWindowSize, 0); end = min(i + perSideWindowSize, arrSize - 1);
+        start = max(i - perSideWindowSize, 0); end = min(i + perSideWindowSize, n - 1);
         for (uint16_t j = start; j <= end; j++) { sum += src[j]; }
-        output[i] = sum / ((double)((end - start) + 1));
+        dest[i] = sum / ((double)((end - start) + 1));
     }
 }
 
@@ -32,22 +32,22 @@ static void checkIfWalking(void)
 {
     if (millis() - sampleT20 < (1000 / SAMPLING_RATE)) { return; }
 
-    ryDataBuffer.push(roty);
+    rzDataBuffer.push(rotz);
     sampleT20 = millis();
 
     /* Walking detection */
     double maxPeak, approxPeak;
     uint16_t peakIndex;
-    memcpy(ryReal, ryDataBuffer.getBuffer(), sizeof(double) * SAMPLES);
-    memset(ryImag, 0, sizeof(double) * SAMPLES);
+    memcpy(rzReal, rzDataBuffer.getBuffer(), sizeof(double) * SAMPLES);
+    memset(rzImag, 0, sizeof(double) * SAMPLES);
     FFT.Windowing(FFT_WIN_TYP_RECTANGLE, FFT_FORWARD);
     FFT.Compute(FFT_FORWARD);
     FFT.ComplexToMagnitude();
     maxPeak = FFT.MajorPeak();
     approxPeak = round(maxPeak * 10.0) / 10.0;
     peakIndex = (uint16_t) round((maxPeak * SAMPLES) / SAMPLING_RATE);
-    walking = (approxPeak >= MIN_WALK_FRQ && approxPeak <= MAX_WALK_FRQ && ryReal[peakIndex] >= MIN_WALK_AMP && ryReal[peakIndex] <= MAX_WALK_AMP && (currentState == MDC_WALKING || currentState == MDC_STANDING));
-    //srprintf("Major peak: %fHz -- Peak index: %d -- Peak value: %f -- Walking: %d\n", approxPeak, peakIndex, ryReal[peakIndex], walking);
+    walking = (approxPeak >= MIN_WALK_FRQ && approxPeak <= MAX_WALK_FRQ && rzReal[peakIndex] >= MIN_WALK_AMP && rzReal[peakIndex] <= MAX_WALK_AMP && (currentState == MDC_WALKING || currentState == MDC_STANDING));
+    //srprintf("Major peak: %fHz -- Peak index: %d -- Peak value: %f -- Walking: %d\n", approxPeak, peakIndex, rzReal[peakIndex], walking);
 }
 
 static void checkIfLaying(void)
