@@ -116,7 +116,6 @@ static void checkIfStandingOrSitting(void)
 static void setState()
 {
     if (graceT > 0) { return; }
-    //standing |= (!walking && currentState == walking);
     standing |= !(layingB || layingF || layingL || layingR || sitting || walking) && (currentState == MDC_WALKING);
     if (layingB) { currentState = MDC_LAYING_B; }
     else if (layingF) { currentState = MDC_LAYING_F; }
@@ -145,8 +144,6 @@ void runMDC(void)
     checkIfWalking();
     checkIfStandingOrSitting();
     setState();
-
-    //srprintf("Walking: %d / Standing: %d / Sitting: %d / LayingF: %d / LayingB: %d / LayingR: %d / LayingL: %d\n", walking, standing, sitting, layingF, layingB, layingR, layingL);
 }
 
 MDC_STATE getCurrentMDCState(void)

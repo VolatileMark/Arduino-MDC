@@ -10,7 +10,7 @@ void initSerial(uint32_t speed)
         hang(!Serial);
         delay(250uL);
         turnPowerLedOff();
-        info("Serial initialized with speed %u", speed);
+        info("Serial initialized with baud rate %u", speed);
         warn("Debug mode is enabled!");
     }
 }
