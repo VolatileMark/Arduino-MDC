@@ -1,16 +1,16 @@
 #include "Common.h"
 
-void initSerial(uint32_t speed)
+void initSerial(uint32_t baud)
 {
     if (!digitalRead(DEBUG_PIN))
     {
         printOnLCD("Waiting for\nserial...");
         turnPowerLedOn();
-        Serial.begin(speed);
+        Serial.begin(baud);
         hang(!Serial);
         delay(250uL);
         turnPowerLedOff();
-        info("Serial initialized with baud rate %u", speed);
+        info("Serial initialized with baud rate %u", baud);
         warn("Debug mode is enabled!");
     }
 }
